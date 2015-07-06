@@ -220,7 +220,7 @@ function loop() {
 loop();
 ```
 
-## configureInterrupt(*isEnabled, [threshold, [options]]*)
+## configureInterrupt(*isEnabled, [threshold, options]*)
 
 Sets up the interrupt system on the LIS3MDL.
 
@@ -269,7 +269,7 @@ The return value is a Squirrel table with following keys and booleans as values:
 | overflow   | A value overflowed the internal measurement range.            |
 | interrupt      | An interrupt event has occured |
 
-## readAxes(*callback*)
+## readAxes([*callback*])
 
 Returns a reading from the magnetic field sensor on all three axes.  The value from the sensor is automatically scaled to be in units of gauss.
 

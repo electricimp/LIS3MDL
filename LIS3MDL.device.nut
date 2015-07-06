@@ -46,8 +46,7 @@ class LIS3MDL {
         // Update the cached scale so that we can convert readings to gauss
         local reg2 = _readRegister(REG_CTL_2);
         _scale = math.pow(4 , (reg2 >> 5) + 1);
-        server.log(reg2 + ": " + _scale)
-        
+
         // This is not a device default, but is convenient
         setConversionType(CONVERSION_TYPE_CONTINUOUS);
     }
@@ -76,7 +75,6 @@ class LIS3MDL {
         _writeRegister(REG_CTL_1, bits, 0x1E);
     }
     
-    // TODO: make it work
     function setConversionType(conversionType) {
         _writeRegister(REG_CTL_3, conversionType, 0x01);
     }
@@ -94,11 +92,12 @@ class LIS3MDL {
     
     function configureInterrupt(isEnabled, threshold=0, options=0) {
         // First configure interrupt threshold
-        local thresholdLow = threshold & 0xFF;
-        local thresholdHigh = (threshold >> 8) & 0xFF;
+        local scaledThreshold = (threshold * SENSITIVITY_OF_MIN_SCALE / _scale).tointeger();
+        local thresholdLow = scaledThreshold & 0xFF;
+        local thresholdHigh = (scaledThreshold >> 8) & 0x7F;
         _writeRegister(REG_INT_THS_L, thresholdLow);
         _writeRegister(REG_INT_THS_H, thresholdHigh);
-        
+
         // Then enable/disable and configure the interrupt
         local interruptBits = 0x00;
         if(isEnabled) {
@@ -147,7 +146,7 @@ class LIS3MDL {
     
     function readInterruptStatus() {
         local interruptByte = _readRegister(REG_INT_SRC);
-        
+
         local statusTable = {
             "x_positive" : (interruptByte & 0x80) == 1,
             "y_positive" : (interruptByte & 0x40) == 1,
