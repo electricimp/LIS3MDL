@@ -3,9 +3,9 @@
 // http://opensource.org/licenses/MIT
 
 class LIS3MDL {
-    
+
     static VERSION = [1,0,0];
-    
+
     // External constants
     static AXIS_X = 0x80;
     static AXIS_Y = 0x40;
@@ -15,7 +15,7 @@ class LIS3MDL {
     static DATA_RATE_FAST = -1;
     static CONVERSION_TYPE_CONTINUOUS = 0x00;
     static CONVERSION_TYPE_SINGLE = 0x01;
-    
+
     // Internal constants
     static REG_ADDR_OUT_X_L = 0x28;
     static REG_ADDR_OUT_Y_L = 0x2A;
@@ -34,14 +34,14 @@ class LIS3MDL {
     _i2c = null;
     _address = null;
     _scale = null;
- 
+
     function constructor(i2c, address=0x1C) {
         _i2c = i2c;
         _address = address;
-        
+
         init();
     }
-    
+
     function init() {
         // Update the cached scale so that we can convert readings to gauss
         local reg2 = _readRegister(REG_CTL_2);
@@ -55,15 +55,15 @@ class LIS3MDL {
         local bits = state ? 0x00 : 0x02;
         _writeRegister(REG_CTL_3, bits, 0x02);
     }
-    
+
     function setPerformance(performanceRating) {
         local bitsXY = performanceRating << 5;
         _writeRegister(REG_CTL_1, bitsXY, 0x60);
-        
+
         local bitsZ = performanceRating << 2;
         _writeRegister(REG_CTL_1, bitsZ, 0x0C);
     }
-    
+
     function setDataRate(dataRate) {
         local bits = 0x00;
         if(dataRate == DATA_RATE_FAST) {
@@ -76,42 +76,41 @@ class LIS3MDL {
             }
             // This is the equation used to convert data rates to the proper bitfield
             bits = (math.log(dataRate / 0.625) / math.log(2)).tointeger() << 2;
-            server.log(format("bits: %X", bits))
         }
         _writeRegister(REG_CTL_1, bits, 0x1E);
-        
+
         // Return actual rate used
         return 0.625 * math.pow(2, (bits >> 2));
     }
-    
+
     function setConversionType(conversionType) {
         _writeRegister(REG_CTL_3, conversionType, 0x01);
     }
-    
+
     function setScale(scale) {
         _scale = scale;
-        
+
         // Cap the scale before sending it to equation
         if(_scale < 4) {
             _scale = 4;
         }
-        
+
         if(_scale > 16) {
             _scale = 16;
         }
-        
+
         local bits = ((_scale / 4) - 1) << 5;
         _writeRegister(REG_CTL_2, bits, 0x60);
-        
+
         // Return actual rate used
         return ((bits >> 5) + 1) * 4;
     }
-    
+
     function setLowPower(state) {
         local bits = state ? 0x20 : 0x00;
         _writeRegister(REG_CTL_3, bits, 0x20);
     }
-    
+
     function configureInterrupt(isEnabled, threshold=0, options=0) {
         // First configure interrupt threshold
         local scaledThreshold = (threshold * SENSITIVITY_OF_MIN_SCALE / _scale).tointeger();
@@ -128,11 +127,11 @@ class LIS3MDL {
 
         _writeRegister(REG_INT_CFG, interruptBits);
     }
-    
+
     function reset() {
         _writeRegister(REG_CTL_2, 0x04, 0x04);
     }
-    
+
     function readAxes(callback=null) {
         if(callback == null) {
             return {
@@ -148,10 +147,10 @@ class LIS3MDL {
             }.bindenv(this));
         }
     }
-    
+
     function readStatus() {
         local statusByte = _readRegister(REG_STATUS);
-        
+
         local statusTable = {
             "ZYXOR" : statusByte & 0x80 ? true : false,
             "ZOR"   : statusByte & 0x40 ? true : false,
@@ -162,10 +161,10 @@ class LIS3MDL {
             "YDA"   : statusByte & 0x02 ? true : false,
             "XDA"   : statusByte & 0x01 ? true : false
         };
-        
+
         return statusTable;
     }
-    
+
     function readInterruptStatus() {
         local interruptByte = _readRegister(REG_INT_SRC);
 
@@ -179,12 +178,12 @@ class LIS3MDL {
             "overflow"   : (interruptByte & 0x02) == 1,
             "interrupt"  : (interruptByte & 0x01) == 1
         };
-        
+
         return statusTable;
     }
-    
+
     // -------------------- PRIVATE METHODS -------------------- //
-    
+
     // Reads and returns 1 byte from the specified register
     // If twoBytes is true, reads 2 bytes from the specified register and the one immediately following it and returns them as a 16-bit int
     function _readRegister(register, twoBytes=false) {
@@ -197,7 +196,7 @@ class LIS3MDL {
             return value[0];
         }
     }
- 
+
     // Writes a 1-byte value to a register.
     // If mask is specified, only the bits masked with 1s will be sent to the register
     function _writeRegister(register, value, mask=0xFF) {
@@ -210,7 +209,7 @@ class LIS3MDL {
             throw "I2C write error: " + result;
         }
     }
-    
+
     // Parses and scales (into gauss) the axis reading from the specified axis register
     function _readAxisAtAddress(register) {
         local raw = _readRegister(register, 2);
@@ -218,7 +217,7 @@ class LIS3MDL {
         local scaled = signed * _scale / SENSITIVITY_OF_MIN_SCALE;
         return scaled;
     }
-    
+
     // Takes an unsigned 16-bit int representing a 2C number
     // Returns the signed number it represents
     static function _parseTwosComplement(unsignedValue) {
