@@ -180,7 +180,17 @@ The LIS3MDL is started in continuous-conversion mode.
 
 ### Usage
 
-TODO
+```squirrel
+// Switch to single-conversion mode
+magneto.setConversionType(LIS3MDL.CONVERSION_TYPE_SINGLE);
+
+server.log(magneto.readAxes().x);
+
+// This log will show the same value
+imp.wakeup(1, function() {
+    server.log(magneto.readAxes().x);
+});
+```
 
 ## readStatus()
 
