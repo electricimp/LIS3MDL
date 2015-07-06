@@ -54,7 +54,7 @@ magneto.init();
 
 Sets whether the magnetic sensor should be powered.
 
-Note that powering down with this method does not completely disable the device.  When powered down, all registers are still accessible, but the sensor will not collect new readings and calls to [`readAxis(axis)`](#readaxisaxis) will always return the same value.
+Note that powering down with this method does not completely disable the device.  When powered down, all registers are still accessible, but the sensor will not collect new readings and calls to [`readAxes(callback)`](#readaxescallback) will always return the same value.
 
 For a way to reduce power less drastically by reducing output rates and processing, see [`setLowPower(state)`](#setlowpowerstate).
 
@@ -110,7 +110,7 @@ Sets the rate at which the LIS3MDL prepares new data readings. Returns the actua
 | `LIS3MDL.DATA_RATE_FAST` | Data rates between 155 Hz and 1kHz are determined by the operating mode, as described below. |
     
 #### Fast Data Rate Configuration
-Data rates under this setting are dependent on the operating mode set with [`setPerformance(performanceRating)`](setperformanceperformancerating).
+Data rates under this setting are dependent on the operating mode set with [`setPerformance(performanceRating)`](#setperformanceperformancerating).
     
 | Performance Rating       | Data Rate (Hz)|
 |--------------------------|---------------|
@@ -148,7 +148,7 @@ Switches the LIS3MDL in or out of low-power mode.
 
 In low-power mode, the output data rate is dropped to 0.625 Hz and the system performs the minimum number of averages in its calculations.  Switching back out of low-power mode will restore the previous output data rate.
 
-For a way to reduce power more drastically by turning off the sensors, see [`setPowered(shouldPower)`](#setpoweredshouldpower).
+For a way to reduce power more drastically by turning off the sensors, see [`enable(state)`](#enablestate).
 
 ```squirrel
 // A very low-power magnetic field polling snippet
