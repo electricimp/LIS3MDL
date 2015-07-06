@@ -93,7 +93,7 @@ magneto.setPerformance(0);
 
 ## setDataRate(*dataRate*)
 
-Sets the rate at which the LIS3MDL prepares new data readings.
+Sets the rate at which the LIS3MDL prepares new data readings. Returns the actual data rate selected (or `LIS3MDL.DATA_RATE_FAST` when applicable).
 
 *dataRate* is a number between 0.625 and 80 representing the output rate in Hz or the value `LIS3MDL.DATA_RATE_FAST`.  The LIS3MDL allows for several discrete output rates, so the actual output rate will be the closest one less than or equal to the one specified, taken from the following table:
 
@@ -132,9 +132,9 @@ magneto.setDataRate(LIS3MDL.DATA_RATE_FAST);
 
 ## setScale(*scale*)
 
-Sets the full-scale range that the LIS3MDL should measure values across.
+Sets the full-scale range that the LIS3MDL should measure values across.  Returns the actual scale selected.
 
-*scale* is an integer with value 4, 8, 12, or 16.  Each value represents a maximum magnitude measured in gauss (e.g. 4 represents a ±4 gauss range).
+*scale* is an integer with value 4, 8, 12, or 16.  Each value represents a maximum magnitude measured in gauss (e.g. 4 represents a ±4 gauss range).  This input must be one of the four allowable values.  Any other input value will be rounded down to the nearest legal value.
 
 ### Usage
 

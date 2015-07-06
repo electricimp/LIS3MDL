@@ -68,11 +68,20 @@ class LIS3MDL {
         local bits = 0x00;
         if(dataRate == DATA_RATE_FAST) {
             bits = 0x02;
+            return DATA_RATE_FAST;
         } else {
+            // Cap the data rate before feeding it to equation
+            if(dataRate > 80) {
+                dataRate = 80;
+            }
             // This is the equation used to convert data rates to the proper bitfield
-            bits = (math.log(dataRate / 0.625) / math.log(2)).tointeger() << 1;
+            bits = (math.log(dataRate / 0.625) / math.log(2)).tointeger() << 2;
+            server.log(format("bits: %X", bits))
         }
         _writeRegister(REG_CTL_1, bits, 0x1E);
+        
+        // Return actual rate used
+        return 0.625 * math.pow(2, (bits >> 2));
     }
     
     function setConversionType(conversionType) {
@@ -81,8 +90,21 @@ class LIS3MDL {
     
     function setScale(scale) {
         _scale = scale;
-        local bits = ((scale / 4) - 1) << 5;
+        
+        // Cap the scale before sending it to equation
+        if(_scale < 4) {
+            _scale = 4;
+        }
+        
+        if(_scale > 16) {
+            _scale = 16;
+        }
+        
+        local bits = ((_scale / 4) - 1) << 5;
         _writeRegister(REG_CTL_2, bits, 0x60);
+        
+        // Return actual rate used
+        return ((bits >> 5) + 1) * 4;
     }
     
     function setLowPower(state) {
