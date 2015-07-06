@@ -30,7 +30,10 @@ local i2c = hardware.i2c89;
 i2c.configure(CLOCK_SPEED_400_KHZ);
 
 // Use alternate I2C address - SA1 pin tied high
-magneto <- LIS3MDL(spi, 0x3C);
+magneto <- LIS3MDL(i2c, 0x3C);
+
+// Enable once we're ready to use
+magneto.enable();
 ```
 
 ## init()
@@ -52,7 +55,7 @@ magneto.init();
 
 ## enable(*state*)
 
-Sets whether the magnetic sensor should be powered.
+Sets whether the magnetic sensor should be powered.  The device starts with this disabled by default.
 
 Note that powering down with this method does not completely disable the device.  When powered down, all registers are still accessible, but the sensor will not collect new readings and calls to [`readAxes(callback)`](#readaxescallback) will always return the same value.
 
@@ -74,7 +77,7 @@ imp.wakeup(60, function() {
 
 ## setPerformance(*performanceRating*)
 
-Sets the performance vs. power tradeoff used when measuring on the three axes.
+Sets the performance vs. power tradeoff used when measuring on the three axes.  The device starts in low-power mode by default.
 
 *performanceRating* is an integer between 0 and 3, assigned as follows:
 
@@ -93,7 +96,7 @@ magneto.setPerformance(0);
 
 ## setDataRate(*dataRate*)
 
-Sets the rate at which the LIS3MDL prepares new data readings. Returns the actual data rate selected (or `LIS3MDL.DATA_RATE_FAST` when applicable).
+Sets the rate at which the LIS3MDL prepares new data readings. Returns the actual data rate selected (or `LIS3MDL.DATA_RATE_FAST` when applicable). The device starts with a data rate of 10Hz by default.
 
 *dataRate* is a number between 0.625 and 80 representing the output rate in Hz or the value `LIS3MDL.DATA_RATE_FAST`.  The LIS3MDL allows for several discrete output rates, so the actual output rate will be the closest one less than or equal to the one specified, taken from the following table:
 
@@ -132,7 +135,7 @@ magneto.setDataRate(LIS3MDL.DATA_RATE_FAST);
 
 ## setScale(*scale*)
 
-Sets the full-scale range that the LIS3MDL should measure values across.  Returns the actual scale selected.
+Sets the full-scale range that the LIS3MDL should measure values across.  Returns the actual scale selected.  The device starts with a full-scale range of 4 gauss by default.
 
 *scale* is an integer with value 4, 8, 12, or 16.  Each value represents a maximum magnitude measured in gauss (e.g. 4 represents a ±4 gauss range).  This input must be one of the four allowable values.  Any other input value will be rounded down to the nearest legal value.
 
@@ -144,7 +147,7 @@ magneto.setScale(8);
 
 ## setLowPower(*state*)
 
-Switches the LIS3MDL in or out of low-power mode.
+Switches the LIS3MDL in or out of low-power mode.  The device starts with this disabled by default.
 
 In low-power mode, the output data rate is dropped to 0.625 Hz and the system performs the minimum number of averages in its calculations.  Switching back out of low-power mode will restore the previous output data rate.
 
@@ -172,7 +175,7 @@ imp.deepsleepfor(86400);
 
 ## setConversionType(*conversionType*)
 
-Switches between continuous and single conversion types.
+Switches between continuous and single conversion types.  This library starts the device in continuous conversion mode by default.
 
 *conversionType* should be `LIS3MDL.CONVERSION_TYPE_SINGLE` to only take measurements when requested or `LIS3MDL.CONVERSION_TYPE_CONTINUOUS` for continuous collection.  Note that single-conversion mode has to be used with sampling frequency from 0.625 Hz to 80Hz.
 
@@ -205,9 +208,9 @@ The return value is a Squirrel table with following keys and booleans as values:
 | YOR   | Whether a Y-axis data overrun has occured              |
 | XOR   | Whether a X-axis data overrun has occured              |
 | ZYXDA | Whether there is new X-, Y-, and Z-axis data available |
-| ZOR   | Whether there is new Z-axis data available             |
-| YOR   | Whether there is new Y-axis data available             |
-| XOR   | Whether there is new X-axis data available             |
+| ZDA   | Whether there is new Z-axis data available             |
+| YDA   | Whether there is new Y-axis data available             |
+| XDA   | Whether there is new X-axis data available             |
 
 ### Usage
 
@@ -232,7 +235,7 @@ loop();
 
 ## configureInterrupt(*isEnabled, [threshold, options]*)
 
-Sets up the interrupt system on the LIS3MDL.
+Sets up the interrupt system on the LIS3MDL.  The device starts with this disabled by default.
 
 ### Parameters
 
