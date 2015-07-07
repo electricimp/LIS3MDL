@@ -169,14 +169,14 @@ class LIS3MDL {
         local interruptByte = _readRegister(REG_INT_SRC);
 
         local statusTable = {
-            "x_positive" : (interruptByte & 0x80) == 1,
-            "y_positive" : (interruptByte & 0x40) == 1,
-            "z_positive" : (interruptByte & 0x20) == 1,
-            "x_negative" : (interruptByte & 0x10) == 1,
-            "y_negative" : (interruptByte & 0x08) == 1,
-            "z_negative" : (interruptByte & 0x04) == 1,
-            "overflow"   : (interruptByte & 0x02) == 1,
-            "interrupt"  : (interruptByte & 0x01) == 1
+            "x_positive" : interruptByte & 0x80 ? true : false,
+            "y_positive" : interruptByte & 0x40 ? true : false,
+            "z_positive" : interruptByte & 0x20 ? true : false,
+            "x_negative" : interruptByte & 0x10 ? true : false,
+            "y_negative" : interruptByte & 0x08 ? true : false,
+            "z_negative" : interruptByte & 0x04 ? true : false,
+            "overflow"   : interruptByte & 0x02 ? true : false,
+            "interrupt"  : interruptByte & 0x01 ? true : false
         };
 
         return statusTable;
