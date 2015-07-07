@@ -1,6 +1,6 @@
 # LIS3MDL Magnetometer Class
 
-This class allows the Electric Imp to drive the [LIS3MDL Magnetometer](http://www.st.com/web/catalog/sense_power/FM89/SC1449/PF255198).  This device is a low-power, highly configurable 3-axis magnetic sensor with support for user-defined interrupts.
+This class allows the Electric Imp to drive the [LIS3MDL](http://www.st.com/web/catalog/sense_power/FM89/SC1449/PF255198) [Magnetometer](http://www.st.com/st-web-ui/static/active/en/resource/technical/document/application_note/DM00136626.pdf).  This device is a low-power, highly configurable 3-axis magnetic sensor with support for user-defined interrupts.
 
 The sensor supports I²C and SPI interfaces.  This library currently only supports the I²C interface.
 
@@ -77,16 +77,16 @@ imp.wakeup(60, function() {
 
 ## setPerformance(*performanceRating*)
 
-Sets the performance vs. power tradeoff used when measuring on the three axes.  The device starts in low-power mode by default.
+Sets the performance vs. power tradeoff used when measuring on the three axes.  Increased performance will result in less noise, which lowers the threshold for the minimum detectable field.  It will also result in longer start-up times.  The device starts in low-power mode by default.
 
 *performanceRating* is an integer between 0 and 3, assigned as follows:
 
-| *performanceRating* | Meaning                |
-|---------------------|------------------------|
-| 0                   | Low power              |
-| 1                   | Medium performance     |
-| 2                   | High performance       |
-| 3                   | Ultra-high performance |
+| *performanceRating* | Meaning                | Time to First Read |
+|---------------------|------------------------|--------------------|
+| 0                   | Low power              | 1.2 ms             |
+| 1                   | Medium performance     | 1.65 ms            |
+| 2                   | High performance       | 3.23 ms            |
+| 3                   | Ultra-high performance | 6.4 ms             |
 
 ### Usage
 
@@ -177,7 +177,7 @@ imp.deepsleepfor(86400);
 
 Switches between continuous and single conversion types.  This library starts the device in continuous conversion mode by default.
 
-*conversionType* should be `LIS3MDL.CONVERSION_TYPE_SINGLE` to only take measurements when requested or `LIS3MDL.CONVERSION_TYPE_CONTINUOUS` for continuous collection.  Note that single-conversion mode has to be used with sampling frequency from 0.625 Hz to 80Hz.
+*conversionType* should be `LIS3MDL.CONVERSION_TYPE_SINGLE` to only take measurements when requested or `LIS3MDL.CONVERSION_TYPE_CONTINUOUS` for continuous collection.  Note that single-conversion mode has to be used with sampling frequency from 0.625 Hz to 80Hz and must be reset before every read.
 
 The LIS3MDL is started in continuous-conversion mode.
 
@@ -252,7 +252,7 @@ Sets up the interrupt system on the LIS3MDL.  The device starts with this disabl
 | `LIS3MDL.AXIS_X` | Whether the LIS3MDL should listen for interrupts on the x-axis |
 | `LIS3MDL.AXIS_Y` | Whether the LIS3MDL should listen for interrupts on the y-axis |
 | `LIS3MDL.AXIS_Z` | Whether the LIS3MDL should listen for interrupts on the z-axis |
-| `LIS3MDL.INTERRUPT_ISACTIVEHIGH` | Whether the interrupt pin is configured in active-high mode |
+| `LIS3MDL.INTERRUPT_ISACTIVEHIGH` | Whether the interrupt pin is configured in active-high mode.  **WARNING: This option will likely cause significant power usage.**  This device uses an open-drain topology to generate interrupt signals and will always burn power when low. To generate a wakeup signal for the Imp, keep the LIS3MDL in active-low mode and invert the signal before it reaches the Imp's wakeup pin.|
 | `LIS3MDL.INTERRUPT_DONTLATCH` | Whether latching mode should be disabled.  If latching is disabled, the interrupt pin may change state even if [`readInterruptStatus()`](#readinterruptstatus) is not called. |
 
 ### Usage
@@ -280,7 +280,7 @@ The return value is a Squirrel table with following keys and booleans as values:
 | z_positive | The Z-axis value exceeded the threshold on the positive side. |
 | z_negative | The Z-axis value exceeded the threshold on the negative side. |
 | overflow   | A value overflowed the internal measurement range.            |
-| interrupt      | An interrupt event has occured |
+| interrupt  | An interrupt event has occured (value always matches interrupt pin state) |
 
 ## readAxes([*callback*])
 

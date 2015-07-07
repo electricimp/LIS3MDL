@@ -10,6 +10,7 @@ class LIS3MDL {
     static AXIS_X = 0x80;
     static AXIS_Y = 0x40;
     static AXIS_Z = 0x20;
+    // Note that if INTERRUPT_ISACTIVEHIGH is used to generate a wake signal, significant power may be wasted.  See README for details.
     static INTERRUPT_ISACTIVEHIGH = 0x04;
     static INTERRUPT_DONTLATCH = 0x02;
     static DATA_RATE_FAST = -1;
