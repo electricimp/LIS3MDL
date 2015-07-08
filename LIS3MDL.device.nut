@@ -50,6 +50,9 @@ class LIS3MDL {
 
         // This is not a device default, but is convenient
         setConversionType(CONVERSION_TYPE_CONTINUOUS);
+        
+        // Give the device time to start up - otherwise issues with interrupts occur
+        imp.sleep(0.01);
     }
 
     function enable(state) {
@@ -122,8 +125,9 @@ class LIS3MDL {
 
         // Then enable/disable and configure the interrupt
         local interruptBits = 0x00;
-        if(isEnabled) {
-            interruptBits = options | 0x01;
+        if (isEnabled) {
+            // Mix in options, but flip DONTLATCH bit
+            interruptBits = (options | 0x01) ^ INTERRUPT_DONTLATCH;
         }
 
         _writeRegister(REG_INT_CFG, interruptBits);
