@@ -50,9 +50,6 @@ class LIS3MDL {
 
         // This is not a device default, but is convenient
         setConversionType(CONVERSION_TYPE_CONTINUOUS);
-        
-        // Give the device time to start up - otherwise issues with interrupts occur
-        imp.sleep(0.01);
     }
 
     function enable(state) {
@@ -131,6 +128,9 @@ class LIS3MDL {
         }
 
         _writeRegister(REG_INT_CFG, interruptBits);
+        
+        // Give the device time to start up - otherwise issues with interrupts occur
+        imp.sleep(0.01);
     }
 
     function reset() {
