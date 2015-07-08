@@ -28,10 +28,10 @@ local i2c = hardware.i2c89;
 i2c.configure(CLOCK_SPEED_400_KHZ);
 
 // Use alternate I2C address - SA1 pin tied high
-magneto <- LIS3MDL(i2c, 0x3C);
+magnetometer <- LIS3MDL(i2c, 0x3C);
 
 // Enable once we're ready to use
-magneto.enable();
+magnetometer.enable();
 ```
 
 ## init()
@@ -47,7 +47,7 @@ magneto <- LIS3MDL(spi, 0x3C);
 
 // ... Reboot the LIS3MDL manually ...
 
-magneto.init();
+magnetometer.init();
 // Now we can continue
 ```
 
@@ -63,12 +63,12 @@ For a way to reduce power less drastically by reducing output rates and processi
 
 ```squirrel
 // Power down if we don't need the sensor to be polling
-magneto.enable(false);
+magnetometer.enable(false);
 
 // Re-enable sensor in 1 minute
 imp.wakeup(60, function() {
-    magneto.enable(true);
-    local reading = magneto.readAxis(LIS3MDL.AXIS_X);
+    magnetometer.enable(true);
+    local reading = magnetometer.readAxis(LIS3MDL.AXIS_X);
     // Use reading
 });
 ```
@@ -89,7 +89,7 @@ Sets the performance vs. power tradeoff used when measuring on the three axes.  
 ### Usage
 
 ```squirrel
-magneto.setPerformance(0);
+magnetometer.setPerformance(0);
 ```
 
 ## setDataRate(*dataRate*)
@@ -124,11 +124,11 @@ Data rates under this setting are dependent on the operating mode set with [`set
 
 ```squirrel
 // Set data rate to 2.5 Hz
-magneto.setDataRate(2.5);
+magnetometer.setDataRate(2.5);
 
 // Set data rate to 155 Hz
-magneto.setPerformance(3);
-magneto.setDataRate(LIS3MDL.DATA_RATE_FAST);
+magnetometer.setPerformance(3);
+magnetometer.setDataRate(LIS3MDL.DATA_RATE_FAST);
 ```
 
 ## setScale(*scale*)
@@ -140,7 +140,7 @@ Sets the full-scale range that the LIS3MDL should measure values across.  Return
 ### Usage
 
 ```squirrel
-magneto.setScale(8);
+magnetometer.setScale(8);
 ```
 
 ## setLowPower(*state*)
@@ -155,7 +155,7 @@ For a way to reduce power more drastically by turning off the sensors, see [`ena
 // A very low-power magnetic field polling snippet
 
 // Use the LIS3MDL in low power mode
-magneto.setLowPower(true);
+magnetometer.setLowPower(true);
 
 // Configure the Imp to wake from deep sleep on the LIS3MDL interrupt pin
 hardware.pin1.configure(DIGITAL_IN_WAKEUP, function() {
@@ -163,7 +163,7 @@ hardware.pin1.configure(DIGITAL_IN_WAKEUP, function() {
 });
 
 // Configure the LIS3MDL to wake the Imp from deep sleep mode
-magneto.configureInterrupt(true, 500, LIS3MDL.AXIS_X);
+magnetometer.configureInterrupt(true, 500, LIS3MDL.AXIS_X);
 
 // Put the Imp in deep sleep - it will be woken if a magnetic field is detected or in a day, whichever comes first
 imp.deepsleepfor(86400);
@@ -183,13 +183,13 @@ The LIS3MDL is started in continuous-conversion mode.
 
 ```squirrel
 // Switch to single-conversion mode
-magneto.setConversionType(LIS3MDL.CONVERSION_TYPE_SINGLE);
+magnetometer.setConversionType(LIS3MDL.CONVERSION_TYPE_SINGLE);
 
-server.log(magneto.readAxes().x);
+server.log(magnetometer.readAxes().x);
 
 // This log will show the same value
 imp.wakeup(1, function() {
-    server.log(magneto.readAxes().x);
+    server.log(magnetometer.readAxes().x);
 });
 ```
 
@@ -216,7 +216,7 @@ The return value is a Squirrel table with following keys and booleans as values:
 // A polling loop without interrupts
 
 function loop() {
-    local status = magneto.readStatus();
+    local status = magnetometer.readStatus();
     if(status.XOR) {
         local data = mangeto.readAxes();
         // Process data
@@ -257,10 +257,10 @@ Sets up the interrupt system on the LIS3MDL.  The device starts with this disabl
 
 ```squirrel
 // Enable interrupt monitoring on the X- and Y-axes with a threshold of 200
-magneto.configureInterrupt(true, 200, LIS3MDL.AXIS_X | LIS3MDL.AXIS_Y);
+magnetometer.configureInterrupt(true, 200, LIS3MDL.AXIS_X | LIS3MDL.AXIS_Y);
 
 // Disable interrupt monitoring
-magneto.configureInterrupt(false);
+magnetometer.configureInterrupt(false);
 ```
 
 ## readInterruptStatus()
@@ -291,7 +291,7 @@ The reading is in the form of a squirrel table with `x`, `y`, and `z` fields.
 ### Usage
 ```squirrel
 function loop() {
-    local reading = magneto.readAxes();
+    local reading = magnetometer.readAxes();
     
     // Do something with the x value
     process(reading.x);
@@ -312,12 +312,12 @@ Performs a software reset of the LIS3MDL's registers.
 ### Usage
 ```squirrel
 // Something bad just happened
-magneto.reset();
+magnetometer.reset();
 
 // Start over
-magneto.init();
-magneto.enable();
-local reading = magneto.readAxes();
+magnetometer.init();
+magnetometer.enable();
+local reading = magnetometer.readAxes();
 
 ```
 

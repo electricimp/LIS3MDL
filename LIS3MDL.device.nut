@@ -70,12 +70,12 @@ class LIS3MDL {
 
     function setDataRate(dataRate) {
         local bits = 0x00;
-        if(dataRate == DATA_RATE_FAST) {
+        if (dataRate == DATA_RATE_FAST) {
             bits = 0x02;
             return DATA_RATE_FAST;
         } else {
             // Cap the data rate before feeding it to equation
-            if(dataRate > 80) {
+            if (dataRate > 80) {
                 dataRate = 80;
             }
             // This is the equation used to convert data rates to the proper bitfield
@@ -95,11 +95,11 @@ class LIS3MDL {
         _scale = scale;
 
         // Cap the scale before sending it to equation
-        if(_scale < 4) {
+        if (_scale < 4) {
             _scale = 4;
         }
 
-        if(_scale > 16) {
+        if (_scale > 16) {
             _scale = 16;
         }
 
@@ -138,7 +138,7 @@ class LIS3MDL {
     }
 
     function readAxes(callback=null) {
-        if(callback == null) {
+        if (callback == null) {
             return {
                 "x" : _readAxisAtAddress(REG_ADDR_OUT_X_L),
                 "y" : _readAxisAtAddress(REG_ADDR_OUT_Y_L),
@@ -193,9 +193,9 @@ class LIS3MDL {
     // If twoBytes is true, reads 2 bytes from the specified register and the one immediately following it and returns them as a 16-bit int
     function _readRegister(register, twoBytes=false) {
         local value = _i2c.read(_address, register.tochar(), twoBytes ? 2 : 1);
-        if(value == null) {
+        if (value == null) {
             throw "I2C read error: " + _i2c.readerror();
-        } else if(twoBytes) {
+        } else if (twoBytes) {
             return (value[1] << 8) | value[0];
         } else {
             return value[0];
@@ -206,11 +206,11 @@ class LIS3MDL {
     // If mask is specified, only the bits masked with 1s will be sent to the register
     function _writeRegister(register, value, mask=0xFF) {
         local valueToWrite = value;
-        if(mask != 0xFF) {
+        if (mask != 0xFF) {
             valueToWrite = (_readRegister(register) & ~mask) | value;
         }
         local result = _i2c.write(_address, format("%c%c", register, valueToWrite));
-        if(result) {
+        if (result) {
             throw "I2C write error: " + result;
         }
     }
@@ -226,7 +226,7 @@ class LIS3MDL {
     // Takes an unsigned 16-bit int representing a 2C number
     // Returns the signed number it represents
     static function _parseTwosComplement(unsignedValue) {
-        if(unsignedValue & 0x8000) {
+        if (unsignedValue & 0x8000) {
             local signedValue = (~unsignedValue + 1) & 0xFFFF;
             return -1 * signedValue;
         } else {
