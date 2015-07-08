@@ -8,8 +8,6 @@ The sensor supports I²C and SPI interfaces.  This library currently only suppor
 
 For an example of this hardware integrated in a reference design, see the [Nora overview](https://electricimp.com/docs/hardware/resources/reference-designs/nora/).
 
-# PN532 Class
-
 ## Constructor: LIS3MDL(*i2c, [address]*)
 
 Creates and initializes an object representing the LIS3MDL magnetometer.  Note that this device must be enabled with a call to [`enable(state)`](#enablestate) before its sensors can be read from.
