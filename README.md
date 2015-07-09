@@ -1,6 +1,6 @@
 # LIS3MDL Magnetometer Class
 
-This class allows the Electric Imp to drive the [LIS3MDL](http://www.st.com/web/catalog/sense_power/FM89/SC1449/PF255198) [Magnetometer](http://www.st.com/st-web-ui/static/active/en/resource/technical/document/application_note/DM00136626.pdf).  This device is a low-power, highly configurable 3-axis magnetic sensor with support for user-defined interrupts.
+This class allows the Electric Imp to drive the LIS3MDL Magnetometer ([datasheet](http://www.st.com/web/catalog/sense_power/FM89/SC1449/PF255198) / [application note](http://www.st.com/st-web-ui/static/active/en/resource/technical/document/application_note/DM00136626.pdf)).  This device is a low-power, highly configurable 3-axis magnetic sensor with support for user-defined interrupts.
 
 The sensor supports I²C and SPI interfaces.  This library currently only supports the I²C interface.
 
@@ -107,10 +107,10 @@ Sets the rate at which the LIS3MDL prepares new data readings. Returns the actua
 | 40                      | Hz          |
 | 80                      | Hz          |
 | `LIS3MDL.DATA_RATE_FAST` | Data rates between 155 Hz and 1kHz are determined by the operating mode, as described below. |
-    
+
 #### Fast Data Rate Configuration
 Data rates under this setting are dependent on the operating mode set with [`setPerformance(performanceRating)`](#setperformanceperformancerating).
-    
+
 | Performance Rating       | Data Rate (Hz)|
 |--------------------------|---------------|
 | Ultra-high performance   | 155           |
@@ -220,11 +220,9 @@ function loop() {
         local data = mangeto.readAxes();
         // Process data
     }
-    
+
     // Try again in a second
-    imp.wakeup(1, function() {
-        loop();
-    });
+    imp.wakeup(1, loop);
 }
 
 loop();
@@ -291,14 +289,12 @@ The reading is in the form of a squirrel table with `x`, `y`, and `z` fields.
 ```squirrel
 function loop() {
     local reading = magnetometer.readAxes();
-    
+
     // Do something with the x value
     process(reading.x);
-    
+
     // Rerun in a second
-    imp.wakeup(1, function() {
-        loop();
-    });
+    imp.wakeup(1, loop);
 }
 
 loop();

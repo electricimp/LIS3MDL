@@ -125,7 +125,7 @@ class LIS3MDL {
         }
 
         _writeRegister(REG_INT_CFG, interruptBits);
-        
+
         // Give the device time to start up - otherwise issues with interrupts occur
         imp.sleep(0.01);
     }
