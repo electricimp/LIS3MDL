@@ -12,8 +12,6 @@ For an example of this hardware integrated in a reference design, see the [Nora 
 
 Creates and initializes an object representing the LIS3MDL magnetometer.  Note that this device must be enabled with a call to [`enable(state)`](#enablestate) before its sensors can be read from.
 
-The LIS3MDL will be started in continuous-conversion mode.
-
 | Parameter | Type         | Default    | Description |
 |-----------|--------------|------------|-------------|
 | i2c       | hardware.i2c | (Required) | A pre-configured [I²C object](https://electricimp.com/docs/api/hardware/i2c/) |
@@ -36,9 +34,9 @@ magnetometer.enable();
 
 ## init()
 
-Configures the LIS3MDL with settings for later use.
+Synchronizes the object's data-reading scale with that stored on the device.
 
-This method should be called after hard power-cycles, but is automatically called by the constructor.
+This method should be called after hard power-cycles, but is automatically called by the constructor and reset functions.
 
 ### Usage
 
@@ -173,24 +171,25 @@ imp.deepsleepfor(86400);
 
 ## setConversionType(*conversionType*)
 
-Switches between continuous and single conversion types.  This library starts the device in continuous conversion mode by default.
+Switches between continuous and single conversion types.  The PN532 is started in single conversion mode by default.
 
-*conversionType* should be `LIS3MDL.CONVERSION_TYPE_SINGLE` to only take measurements when requested or `LIS3MDL.CONVERSION_TYPE_CONTINUOUS` for continuous collection.  Note that single-conversion mode has to be used with sampling frequency from 0.625 Hz to 80Hz and must be reset before every read.
-
-The LIS3MDL is started in continuous-conversion mode.
+*conversionType* should be `LIS3MDL.CONVERSION_TYPE_SINGLE` to immediately take a single measurement or `LIS3MDL.CONVERSION_TYPE_CONTINUOUS` for continuous collection.  Note that single-conversion mode has to be used with sampling frequency from 0.625 Hz to 80Hz and resets the device into disabled mode after each call.
 
 ### Usage
 
 ```squirrel
-// Switch to single-conversion mode
+// Start in single-conversion mode
 magnetometer.setConversionType(LIS3MDL.CONVERSION_TYPE_SINGLE);
 
 server.log(magnetometer.readAxes().x);
+imp.sleep(1);
 
-// This log will show the same value
-imp.wakeup(1, function() {
-    server.log(magnetometer.readAxes().x);
-});
+// This log will show the same value as before
+server.log(magnetometer.readAxes().x);
+
+// Re-enable the device to get a new reading
+magnetometer.enable(true);
+server.log(magnetometer.readAxes().x);
 ```
 
 ## readStatus()

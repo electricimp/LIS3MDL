@@ -47,9 +47,6 @@ class LIS3MDL {
         // Update the cached scale so that we can convert readings to gauss
         local reg2 = _readRegister(REG_CTL_2);
         _scale = math.pow(4 , (reg2 >> 5) + 1);
-
-        // This is not a device default, but is convenient
-        setConversionType(CONVERSION_TYPE_CONTINUOUS);
     }
 
     function enable(state) {
@@ -135,6 +132,7 @@ class LIS3MDL {
 
     function reset() {
         _writeRegister(REG_CTL_2, 0x04, 0x04);
+        init();
     }
 
     function readAxes(callback=null) {
