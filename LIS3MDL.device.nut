@@ -86,7 +86,7 @@ class LIS3MDL {
     }
 
     function setScale(scale) {
-        _scale = scale;
+        _scale = scale.tointeger();
 
         // Cap the scale before sending it to equation
         if (_scale < 4) {
