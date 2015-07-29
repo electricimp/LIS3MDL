@@ -4,7 +4,7 @@
 
 class LIS3MDL {
 
-    static VERSION = [1,0,0];
+    static VERSION = [1,0,1];
 
     // External constants
     static AXIS_X = 0x80;
@@ -205,7 +205,7 @@ class LIS3MDL {
     function _writeRegister(register, value, mask=0xFF) {
         local valueToWrite = value;
         if (mask != 0xFF) {
-            valueToWrite = (_readRegister(register) & ~mask) | value;
+            valueToWrite = (_readRegister(register) & ~mask) | (value & mask);
         }
         local result = _i2c.write(_address, format("%c%c", register, valueToWrite));
         if (result) {
