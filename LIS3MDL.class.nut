@@ -4,7 +4,7 @@
 
 class LIS3MDL {
 
-    static VERSION = [1,0,1];
+    static VERSION = [1,0,2];
 
     // External constants
     static AXIS_X = 0x80;
@@ -179,7 +179,7 @@ class LIS3MDL {
             "y_negative" : interruptByte & 0x08 ? true : false,
             "z_negative" : interruptByte & 0x04 ? true : false,
             "overflow"   : interruptByte & 0x02 ? true : false,
-            "interrupt"  : interruptByte & 0x01 ? true : false
+            "interrupt"  : interruptByte & 0x01
         };
 
         return statusTable;
