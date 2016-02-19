@@ -46,7 +46,10 @@ class LIS3MDL {
     function init() {
         // Update the cached scale so that we can convert readings to gauss
         local reg2 = _readRegister(REG_CTL_2);
-        _scale = math.pow(4 , (reg2 >> 5) + 1);
+        if(reg2 == 0x00) _scale = 4;
+        if(reg2 == 0x20) _scale = 8;
+        if(reg2 == 0x40) _scale = 12;
+        if(reg2 == 0x60) _scale = 16;
     }
 
     function enable(state) {
