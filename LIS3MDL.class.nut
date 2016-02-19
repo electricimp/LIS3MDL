@@ -10,9 +10,8 @@ class LIS3MDL {
     static AXIS_X = 0x80;
     static AXIS_Y = 0x40;
     static AXIS_Z = 0x20;
-    // Note that if INTERRUPT_ISACTIVEHIGH is used to generate a wake signal, significant power may be wasted.  See README for details.
-    static INTERRUPT_ISACTIVEHIGH = 0x04;
-    static INTERRUPT_DONTLATCH = 0x02;
+    static INTERRUPT_ACTIVEHIGH = 0x04;
+    static INTERRUPT_LATCH = 0x02;
     static DATA_RATE_FAST = -1;
     static CONTINUOUS_MODE = 0x00;
     static ONE_SHOT_MODE = 0x01;
@@ -111,7 +110,7 @@ class LIS3MDL {
         _writeRegister(REG_CTL_3, bits, 0x20);
     }
 
-    function configureInterrupt(isEnabled, threshold=0, options=0) {
+    function configureInterrupt(isEnabled, threshold=4, options=0) {
         // First configure interrupt threshold
         local scaledThreshold = (threshold * SENSITIVITY_OF_MIN_SCALE / _scale).tointeger();
         local thresholdLow = scaledThreshold & 0xFF;
@@ -123,7 +122,7 @@ class LIS3MDL {
         local interruptBits = 0x00;
         if (isEnabled) {
             // Mix in options, but flip DONTLATCH bit
-            interruptBits = (options | 0x01) ^ INTERRUPT_DONTLATCH;
+            interruptBits = (options | 0x01);
         }
 
         _writeRegister(REG_INT_CFG, interruptBits);
