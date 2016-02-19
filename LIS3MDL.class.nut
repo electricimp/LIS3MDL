@@ -14,8 +14,9 @@ class LIS3MDL {
     static INTERRUPT_ISACTIVEHIGH = 0x04;
     static INTERRUPT_DONTLATCH = 0x02;
     static DATA_RATE_FAST = -1;
-    static CONVERSION_TYPE_CONTINUOUS = 0x00;
-    static CONVERSION_TYPE_SINGLE = 0x01;
+    static CONTINUOUS_MODE = 0x00;
+    static ONE_SHOT_MODE = 0x01;
+    static SHUT_DOWN_MODE = 0x11;
 
     // Internal constants
     static REG_ADDR_OUT_X_L = 0x28;
@@ -52,11 +53,6 @@ class LIS3MDL {
         if(reg2 == 0x60) _scale = 16;
     }
 
-    function enable(state) {
-        local bits = state ? 0x00 : 0x02;
-        _writeRegister(REG_CTL_3, bits, 0x02);
-    }
-
     function setPerformance(performanceRating) {
         local bitsXY = performanceRating << 5;
         _writeRegister(REG_CTL_1, bitsXY, 0x60);
@@ -84,8 +80,8 @@ class LIS3MDL {
         return dataRate
     }
 
-    function setConversionType(conversionType) {
-        _writeRegister(REG_CTL_3, conversionType, 0x01);
+    function setConversionMode(mode) {
+        _writeRegister(REG_CTL_3, mode, 0x03);
     }
 
     function setScale(scale) {
