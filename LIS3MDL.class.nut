@@ -180,7 +180,7 @@ class LIS3MDL {
             "y_negative" : interruptByte & 0x08 ? true : false,
             "z_negative" : interruptByte & 0x04 ? true : false,
             "overflow"   : interruptByte & 0x02 ? true : false,
-            "interrupt"  : interruptByte & 0x01 ? true : false
+            "interrupt"  : interruptByte & 0x01
         };
 
         return statusTable;
