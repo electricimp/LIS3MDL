@@ -36,20 +36,7 @@ magnetometer <- LIS3MDL(i2c, 0x3C);
 magnetometer.enable();
 ```
 
-### init()
 
-Synchronizes the object's data-reading scale with that stored on the device.
-
-This method should be called after hard power-cycles, but is automatically called by the constructor and reset functions.
-
-```squirrel
-magneto <- LIS3MDL(spi, 0x3C);
-
-// ... Reboot the LIS3MDL manually ...
-
-magnetometer.init();
-// Now we can continue
-```
 
 ### enable(*state*)
 
@@ -310,6 +297,11 @@ magnetometer.enable();
 local reading = magnetometer.readAxes();
 
 ```
+
+### init()
+
+Synchronizes the object's data-reading scale with that stored on the device.  This method is automatically called by the constructor and reset functions.
+
 
 # License
 
