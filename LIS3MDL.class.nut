@@ -69,7 +69,6 @@ class LIS3MDL {
         local bits = 0x00;
         if (dataRate == DATA_RATE_FAST) {
             bits = 0x02;
-            return DATA_RATE_FAST;
         } else {
             // Cap the data rate before feeding it to equation
             if (dataRate > 80) {
@@ -77,11 +76,12 @@ class LIS3MDL {
             }
             // This is the equation used to convert data rates to the proper bitfield
             bits = (math.log(dataRate / 0.625) / math.log(2)).tointeger() << 2;
+            // Calculate actual rate used
+            dataRate = 0.625 * math.pow(2, (bits >> 2));
         }
-        _writeRegister(REG_CTL_1, bits, 0x1E);
 
-        // Return actual rate used
-        return 0.625 * math.pow(2, (bits >> 2));
+        _writeRegister(REG_CTL_1, bits, 0x1E);
+        return dataRate
     }
 
     function setConversionType(conversionType) {
