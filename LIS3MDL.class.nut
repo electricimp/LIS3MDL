@@ -4,7 +4,7 @@
 
 class LIS3MDL {
 
-    static VERSION = [1,0,1];
+    static VERSION = [2,0,0];
 
     // External constants
     static AXIS_X = 0x80;

@@ -4,6 +4,8 @@ This class allows the Electric Imp to drive the LIS3MDL Magnetometer ([datasheet
 
 The sensor supports I²C and SPI interfaces.  This library currently only supports the I²C interface.
 
+To add this library to your project, add #require "LIS3MDL.class.nut:2.0.0" to the top of your device code
+
 ## Examples and Hardware
 
 For an example of this hardware integrated in a reference design, see the [Nora overview](https://electricimp.com/docs/hardware/resources/reference-designs/nora/).
@@ -20,7 +22,7 @@ Creates and initializes an object representing the LIS3MDL magnetometer.  Note t
 ### Usage
 
 ```squirrel
-#require "LIS3MDL.class.nut:1.0.1"
+#require "LIS3MDL.class.nut:2.0.0"
 
 local i2c = hardware.i2c89;
 i2c.configure(CLOCK_SPEED_400_KHZ);
