@@ -103,8 +103,11 @@ class LIS3MDL {
         local bits = ((_scale / 4) - 1) << 5;
         _writeRegister(REG_CTL_2, bits, 0x60);
 
+        // Set locally stored scale to actual rate used
+        _scale = ((bits >> 5) + 1) * 4;
+
         // Return actual rate used
-        return ((bits >> 5) + 1) * 4;
+        return _scale;
     }
 
     function setLowPower(state) {
