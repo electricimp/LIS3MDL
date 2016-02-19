@@ -62,7 +62,7 @@ class LIS3MDL {
         _writeRegister(REG_CTL_1, bitsXY, 0x60);
 
         local bitsZ = performanceRating << 2;
-        _writeRegister(REG_CTL_1, bitsZ, 0x0C);
+        _writeRegister(REG_CTL_4, bitsZ, 0x0C);
     }
 
     function setDataRate(dataRate) {
