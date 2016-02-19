@@ -4,7 +4,7 @@ This class allows the Electric Imp to drive the LIS3MDL Magnetometer ([datasheet
 
 The sensor supports I²C and SPI interfaces.  This library currently only supports the I²C interface.
 
-To add this library to your project, add #require "LIS3MDL.class.nut:2.0.0" to the top of your device code
+**To add this library to your project, add `#require "LIS3MDL.class.nut:2.0.0"` to the top of your device code.**
 
 ## Examples and Hardware
 
@@ -15,7 +15,7 @@ For an example of this hardware integrated in a reference design, see the [Nora 
 
 ### Constructor: LIS3MDL(*i2c, [address]*)
 
-Creates and initializes an object representing the LIS3MDL magnetometer.  Note that this device must be enabled with a call to [`setConversionMode(mode)`](#setConversionModemode) before its sensors can be read from.
+Creates and initializes an object representing the LIS3MDL magnetometer.  Note that this device must be configured with [`setConversionMode(mode)`](#setconversionmodemode) before its sensors can be read from.
 
 | Parameter | Type         | Default    | Description |
 |-----------|--------------|------------|-------------|
@@ -24,23 +24,17 @@ Creates and initializes an object representing the LIS3MDL magnetometer.  Note t
 
 
 ```squirrel
-#require "LIS3MDL.class.nut:2.0.0"
-
 local i2c = hardware.i2c89;
 i2c.configure(CLOCK_SPEED_400_KHZ);
 
-// Use alternate I2C address - SA1 pin tied high
+// Use alternate I2C address
 magnetometer <- LIS3MDL(i2c, 0x3C);
 ```
 
 
 ### setScale(*scale*)
 
-Sets the full-scale range that the LIS3MDL should measure values across.  Returns the actual scale selected.  The device starts with a full-scale range of 4 gauss by default.
-
-*scale* is an integer with value 4, 8, 12, or 16.  Each value represents a maximum magnitude measured in gauss (e.g. 4 represents a ±4 gauss range).  This input must be one of the four allowable values.  Any other input value will be rounded down to the nearest legal value.
-
-
+Sets the full-scale range that the LIS3MDL should measure values across and returns the actual scale selected.  Supported *scale* values are 4, 8, 12, or 16.  Each value represents a maximum magnitude measured in gauss (e.g. 4 represents a ±4 gauss range).  This input must be one of the four allowable values.  Any other input value will be rounded down to the nearest legal value.  The device starts with a full-scale range of 4 gauss by default.
 
 ```squirrel
 magnetometer.setScale(8);
@@ -49,9 +43,7 @@ magnetometer.setScale(8);
 
 ### setDataRate(*dataRate*)
 
-Sets the rate at which the LIS3MDL prepares new data readings. Returns the actual data rate selected (or `LIS3MDL.DATA_RATE_FAST` when applicable). The device starts with a data rate of 40Hz by default.
-
-*dataRate* is a number between 0.625 and 80 representing the output rate in Hz or the value `LIS3MDL.DATA_RATE_FAST`.  The LIS3MDL allows for several discrete output rates, so the actual output rate will be the closest one less than or equal to the one specified, taken from the following table:
+Sets the rate at which the LIS3MDL prepares new data readings and returns the actual data rate selected (or `LIS3MDL.DATA_RATE_FAST` when applicable).   See chart below for supported data rates.  If an unsupported data rate is selected the data rate will be rounded down to the closest supported rate.  The device starts with a data rate of 40Hz by default (Note: this is a different rate than that specified in the datasheet).
 
 | Rate                    | Description |
 |-------------------------|-------------|
@@ -65,6 +57,12 @@ Sets the rate at which the LIS3MDL prepares new data readings. Returns the actua
 | 80                      | Hz          |
 | `LIS3MDL.DATA_RATE_FAST` | Data rates between 155 Hz and 1kHz are determined by the operating mode, as described below. |
 
+```squirrel
+// Set data rate to 2.5 Hz
+local rate = magnetometer.setDataRate(2.5);
+server.log("Magnetometer is running at " + rate + " Hz");
+```
+
 #### Fast Data Rate Configuration
 Data rates under this setting are dependent on the operating mode set with [`setPerformance(performanceRating)`](#setperformanceperformancerating).
 
@@ -76,16 +74,9 @@ Data rates under this setting are dependent on the operating mode set with [`set
 | Low-power                | 1000          |
 
 
-```squirrel
-// Set data rate to 2.5 Hz
-magnetometer.setDataRate(2.5);
-```
-
 ### setPerformance(*performanceRating*)
 
-Sets the performance vs. power tradeoff used when measuring on the three axes.  Increased performance will result in less noise, which lowers the threshold for the minimum detectable field.  It will also result in longer start-up times.  The device starts in low-power mode by default.
-
-*performanceRating* is an integer between 0 and 3, assigned as follows:
+Sets the performance vs. power tradeoff used when measuring on the three axes.  Increased performance will result in less noise, which lowers the threshold for the minimum detectable field.  It will also result in longer start-up times.  See the chart below for how to configure *performanceRating*. The device starts in low-power mode by default.
 
 | *performanceRating* | Meaning                | Time to First Read |
 |---------------------|------------------------|--------------------|
@@ -103,44 +94,47 @@ magnetometer.setDataRate(LIS3MDL.DATA_RATE_FAST);
 
 ### setLowPower(*state*)
 
-Switches the LIS3MDL in or out of low-power mode.  The device starts with this disabled by default.
-
-In low-power mode, the output data rate is dropped to 0.625 Hz and the system performs the minimum number of averages in its calculations.  Switching back out of low-power mode will restore the previous output data rate.
-
-For a way to reduce power more drastically by turning off the sensors, see [`setConversionMode(mode)`](#setConversionModemode).
+Switches the LIS3MDL in or out of low-power mode.  In low-power mode, the output data rate is dropped to 0.625 Hz and the system performs the minimum number of averages in its calculations.  Switching back out of low-power mode will restore the previous output data rate. The device starts with low-power mode disabled.
 
 ```squirrel
 // A very low-power magnetic field polling snippet
+
+// Enable the LIS3MDL
+magnetometer.setConversionMode(LIS3MDL.CONTINUOUS_MODE);
 
 // Use the LIS3MDL in low power mode
 magnetometer.setLowPower(true);
 
 // Configure the Imp to wake from deep sleep on the LIS3MDL interrupt pin
 hardware.pin1.configure(DIGITAL_IN_WAKEUP, function() {
-    // Do something
+    // Take a reading
+    magnetometer.readAxes(function(reading) {
+        server.log("x: " + reading.x + " y: " + reading.y + " z: " + reading.z);
+    });
 });
 
-// Configure the LIS3MDL to wake the Imp from deep sleep mode
+// Configure the LIS3MDL to wake the Imp from deep sleep mode if a magnetic field over 3 gauss is detected.
 magnetometer.configureInterrupt(true, 3, LIS3MDL.AXIS_X);
 
-// Put the Imp in deep sleep - it will be woken if a magnetic field is detected or in a day, whichever comes first
+// Put the Imp in deep sleep for one day.
 imp.deepsleepfor(86400);
 ```
 
 ### setConversionMode(*mode*)
 
+Use *setConversionMode* to enable measurements on all three axes.
+
 The device is started in `LIS3MDL.SHUT_DOWN_MODE` by default.  Note that powering down with this method does not completely disable the device.  When powered down, all registers are still accessible, but the sensor will not collect new readings and calls to [`readAxes(callback)`](#readaxescallback) will always return the same value.
 
 In `LIS3MDL.ONE_SHOT_MODE` the device immediately takes a single measurement then resets to `LIS3MDL.SHUT_DOWN_MODE`.  Note that one-shot mode has to be used with sampling frequency from 0.625 Hz to 80Hz.
 
-Set the device to `LIS3MDL.CONTINUOUS_MODE` for continuous collection.
+In `LIS3MDL.CONTINUOUS_MODE` the device takes continuous measurements.
 
 | *mode* | Description |
 |---------------------|------------------------|
-| LIS3MDL.SHUT_DOWN_MODE    | Powers down the magnetic sensor  |
+| LIS3MDL.SHUT_DOWN_MODE    | Powers down the magnetic sensor. |
 | LIS3MDL.ONE_SHOT_MODE        | Immediately take a single measurement then returns to shut-down mode.  |
-| LIS3MDL.CONTINUOUS_MODE   | Continuous collection  |
-
+| LIS3MDL.CONTINUOUS_MODE   | Takes continuous measurements.  |
 
 ```squirrel
 // Take a single reading
@@ -157,7 +151,7 @@ server.log(magnetometer.readAxes().x);
 
 The *readAxes* method reads and returns the latest measurement from the magnetic field sensor.  The reading is in the form of a squirrel table with `x`, `y`, and `z` fields.  The value from the sensor reading is automatically scaled to gauss.
 
-The *readAxes* method takes an optional callback for asynchronous operation. If a callback is specified, then the data will be passed to the callback as the only parameter.  If not, the data will be returned immediately.
+The *readAxes* method takes an optional callback for asynchronous operation. If a callback is specified, then the reading table will be passed to the callback as the only parameter.  If not, the reading table will be returned.
 
 #####Synchronous Example:
 
@@ -176,9 +170,7 @@ magnetometer.readAxes(function(reading) {
 ```
 
 ### readStatus()
-Parses and returns the value of the LIS3MDL's status register.
-
-The return value is a Squirrel table with following keys and booleans as values:
+Parses and returns the value of the LIS3MDL's status register.  The return value is a Squirrel table with following keys and booleans as values:
 
 | Key   | Description                                            |
 |-------|--------------------------------------------------------|
@@ -220,7 +212,7 @@ statusLoop();
 
 ### configureInterrupt(*isEnabled, [threshold, options]*)
 
-Sets up the interrupt system on the LIS3MDL.  The device starts with this disabled by default.
+Sets up the interrupt system on the LIS3MDL.  The device starts with interrupts disabled by default.
 
 #### Parameters
 
@@ -241,9 +233,10 @@ Sets up the interrupt system on the LIS3MDL.  The device starts with this disabl
 | `LIS3MDL.INTERRUPT_LATCH` | Latching is disabled by default | When this option is passed in latching will be enabled.  If latching is disabled, the interrupt pin may change state even if [`readInterruptStatus()`](#readinterruptstatus) is not called. |
 
 ```squirrel
-// Enable interrupt monitoring on the X- and Y-axes with a threshold of 200
+// Enable interrupt monitoring on the X- and Y-axes with a threshold of 3 gauss
 magnetometer.configureInterrupt(true, 3, LIS3MDL.AXIS_X | LIS3MDL.AXIS_Y);
-
+```
+```squirrel
 // Disable interrupt monitoring
 magnetometer.configureInterrupt(false);
 ```
@@ -266,7 +259,7 @@ Returns the interrupt source register on the LIS3MDL.  The return value is a Squ
 
 ### reset()
 
-Performs a software reset of the LIS3MDL's registers.  After calling reset you will need to reconfigure the magnetometer with your desired settings.
+Performs a software reset of the LIS3MDL's registers.  After calling reset you will need to reconfigure the magnetometer's settings.
 
 
 ```squirrel
