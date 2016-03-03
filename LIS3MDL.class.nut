@@ -4,18 +4,18 @@
 
 class LIS3MDL {
 
-    static VERSION = [1,0,1];
+    static VERSION = [2,0,0];
 
     // External constants
     static AXIS_X = 0x80;
     static AXIS_Y = 0x40;
     static AXIS_Z = 0x20;
-    // Note that if INTERRUPT_ISACTIVEHIGH is used to generate a wake signal, significant power may be wasted.  See README for details.
-    static INTERRUPT_ISACTIVEHIGH = 0x04;
-    static INTERRUPT_DONTLATCH = 0x02;
+    static INTERRUPT_ACTIVEHIGH = 0x04;
+    static INTERRUPT_LATCH = 0x02;
     static DATA_RATE_FAST = -1;
-    static CONVERSION_TYPE_CONTINUOUS = 0x00;
-    static CONVERSION_TYPE_SINGLE = 0x01;
+    static CONTINUOUS_MODE = 0x00;
+    static ONE_SHOT_MODE = 0x01;
+    static SHUT_DOWN_MODE = 0x11;
 
     // Internal constants
     static REG_ADDR_OUT_X_L = 0x28;
@@ -46,12 +46,10 @@ class LIS3MDL {
     function init() {
         // Update the cached scale so that we can convert readings to gauss
         local reg2 = _readRegister(REG_CTL_2);
-        _scale = math.pow(4 , (reg2 >> 5) + 1);
-    }
-
-    function enable(state) {
-        local bits = state ? 0x00 : 0x02;
-        _writeRegister(REG_CTL_3, bits, 0x02);
+        if(reg2 == 0x00) _scale = 4;
+        if(reg2 == 0x20) _scale = 8;
+        if(reg2 == 0x40) _scale = 12;
+        if(reg2 == 0x60) _scale = 16;
     }
 
     function setPerformance(performanceRating) {
@@ -59,14 +57,13 @@ class LIS3MDL {
         _writeRegister(REG_CTL_1, bitsXY, 0x60);
 
         local bitsZ = performanceRating << 2;
-        _writeRegister(REG_CTL_1, bitsZ, 0x0C);
+        _writeRegister(REG_CTL_4, bitsZ, 0x0C);
     }
 
     function setDataRate(dataRate) {
         local bits = 0x00;
         if (dataRate == DATA_RATE_FAST) {
             bits = 0x02;
-            return DATA_RATE_FAST;
         } else {
             // Cap the data rate before feeding it to equation
             if (dataRate > 80) {
@@ -74,15 +71,16 @@ class LIS3MDL {
             }
             // This is the equation used to convert data rates to the proper bitfield
             bits = (math.log(dataRate / 0.625) / math.log(2)).tointeger() << 2;
+            // Calculate actual rate used
+            dataRate = 0.625 * math.pow(2, (bits >> 2));
         }
-        _writeRegister(REG_CTL_1, bits, 0x1E);
 
-        // Return actual rate used
-        return 0.625 * math.pow(2, (bits >> 2));
+        _writeRegister(REG_CTL_1, bits, 0x1E);
+        return dataRate
     }
 
-    function setConversionType(conversionType) {
-        _writeRegister(REG_CTL_3, conversionType, 0x01);
+    function setConversionMode(mode) {
+        _writeRegister(REG_CTL_3, mode, 0x03);
     }
 
     function setScale(scale) {
@@ -100,8 +98,11 @@ class LIS3MDL {
         local bits = ((_scale / 4) - 1) << 5;
         _writeRegister(REG_CTL_2, bits, 0x60);
 
+        // Set locally stored scale to actual rate used
+        _scale = ((bits >> 5) + 1) * 4;
+
         // Return actual rate used
-        return ((bits >> 5) + 1) * 4;
+        return _scale;
     }
 
     function setLowPower(state) {
@@ -109,7 +110,7 @@ class LIS3MDL {
         _writeRegister(REG_CTL_3, bits, 0x20);
     }
 
-    function configureInterrupt(isEnabled, threshold=0, options=0) {
+    function configureInterrupt(isEnabled, threshold=4, options=0) {
         // First configure interrupt threshold
         local scaledThreshold = (threshold * SENSITIVITY_OF_MIN_SCALE / _scale).tointeger();
         local thresholdLow = scaledThreshold & 0xFF;
@@ -121,7 +122,7 @@ class LIS3MDL {
         local interruptBits = 0x00;
         if (isEnabled) {
             // Mix in options, but flip DONTLATCH bit
-            interruptBits = (options | 0x01) ^ INTERRUPT_DONTLATCH;
+            interruptBits = (options | 0x01);
         }
 
         _writeRegister(REG_INT_CFG, interruptBits);
@@ -179,7 +180,7 @@ class LIS3MDL {
             "y_negative" : interruptByte & 0x08 ? true : false,
             "z_negative" : interruptByte & 0x04 ? true : false,
             "overflow"   : interruptByte & 0x02 ? true : false,
-            "interrupt"  : interruptByte & 0x01 ? true : false
+            "interrupt"  : interruptByte & 0x01
         };
 
         return statusTable;
