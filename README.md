@@ -20,7 +20,7 @@ Creates and initializes an object representing the LIS3MDL magnetometer. This de
 
 | Parameter | Type | Default Value | Description |
 | --- | --- | --- | --- |
-| i2cBus | hardware.i2c | N/A | A pre-configured [I&2up2;C object](https://developer.electricimp.com/api/hardware/i2c/) |
+| i2cBus | hardware.i2c | N/A | A pre-configured [I&sup2;C object](https://developer.electricimp.com/api/hardware/i2c/) |
 | i2cAddress | Byte | 0x1C | The LIS3MDL’s 8-bit I&sup2;C address |
 
 #### Example ####
